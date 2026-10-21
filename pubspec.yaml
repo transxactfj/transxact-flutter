@@ -1,20 +1,26 @@
 name: transxact_flutter
-description: "A new Flutter package project."
-version: 0.0.1
-homepage:
+description: "Flutter helpers for taking M-PAiSA and MyCash payments with Transxact hosted Checkout Sessions."
+version: 0.1.0
+homepage: https://transxact.io
+repository: https://github.com/transxactfj/transxact-flutter
+issue_tracker: https://github.com/transxactfj/transxact-flutter/issues
+topics: [payments, checkout, fiji, mpaisa, mycash]
 
 environment:
   sdk: ^3.13.5
-  flutter: ">=1.17.0"
+  flutter: ">=3.27.0"
 
 dependencies:
   flutter:
     sdk: flutter
+  http: ^1.6.0
+  url_launcher: ^6.3.3
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  mocktail: ^1.0.5
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
