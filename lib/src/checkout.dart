@@ -137,38 +137,60 @@ class Transxact {
   ///
   /// Arriving back from checkout proves nothing (both the success and cancel
   /// URLs get `session_id`), so the Merchant backend is always asked. Cancel
-  /// the subscription to stop polling.
-  Stream<CheckoutReturnUpdate> watchSession(String sessionId) async* {
-    final started = DateTime.now();
-    var delay = polling.interval;
-    yield const CheckoutReturnUpdate(CheckoutReturnState.loading);
-    while (true) {
-      final CheckoutSession session;
-      try {
-        session = await fetchSession(sessionId);
-      } catch (error) {
-        yield CheckoutReturnUpdate(CheckoutReturnState.error, error: error);
-        return;
-      }
-      if (session.status != CheckoutSessionStatus.pending) {
-        yield CheckoutReturnUpdate(
-          CheckoutReturnState.settled,
-          session: session,
+  /// the subscription to stop polling: no further lookup is made.
+  Stream<CheckoutReturnUpdate> watchSession(String sessionId) {
+    late final StreamController<CheckoutReturnUpdate> controller;
+    var cancelled = false;
+
+    Future<void> poll() async {
+      final started = DateTime.now();
+      var delay = polling.interval;
+      controller.add(const CheckoutReturnUpdate(CheckoutReturnState.loading));
+      while (!cancelled) {
+        final CheckoutSession session;
+        try {
+          session = await fetchSession(sessionId);
+        } catch (error) {
+          if (!cancelled) {
+            controller.add(
+              CheckoutReturnUpdate(CheckoutReturnState.error, error: error),
+            );
+          }
+          break;
+        }
+        if (cancelled) break;
+        if (session.status != CheckoutSessionStatus.pending) {
+          controller.add(
+            CheckoutReturnUpdate(CheckoutReturnState.settled, session: session),
+          );
+          break;
+        }
+        final remaining = polling.timeout - DateTime.now().difference(started);
+        if (remaining <= Duration.zero) {
+          controller.add(
+            CheckoutReturnUpdate(
+              CheckoutReturnState.timedOut,
+              session: session,
+            ),
+          );
+          break;
+        }
+        controller.add(
+          CheckoutReturnUpdate(CheckoutReturnState.polling, session: session),
         );
-        return;
+        await Future<void>.delayed(delay < remaining ? delay : remaining);
+        delay = delay * 2 > polling.maxInterval
+            ? polling.maxInterval
+            : delay * 2;
       }
-      final remaining = polling.timeout - DateTime.now().difference(started);
-      if (remaining <= Duration.zero) {
-        yield CheckoutReturnUpdate(
-          CheckoutReturnState.timedOut,
-          session: session,
-        );
-        return;
-      }
-      yield CheckoutReturnUpdate(CheckoutReturnState.polling, session: session);
-      await Future<void>.delayed(delay < remaining ? delay : remaining);
-      delay = delay * 2 > polling.maxInterval ? polling.maxInterval : delay * 2;
+      await controller.close();
     }
+
+    controller = StreamController<CheckoutReturnUpdate>(
+      onListen: poll,
+      onCancel: () => cancelled = true,
+    );
+    return controller.stream;
   }
 
   Map<String, dynamic> _parseJson(http.Response response, Uri url) {

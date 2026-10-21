@@ -2,6 +2,8 @@
 
 * First release of `transxact_flutter`, the client-only Flutter SDK for Transxact hosted Checkout Sessions.
 * `Transxact.pay` and `CheckoutButton` start a Checkout attempt through the Merchant backend and open the hosted URL in an in-app browser, with an Idempotency-Key per attempt, a double-tap guard and https-only `hostedUrl` validation.
-* `Transxact.watchSession` confirms the Checkout Session status through the Merchant backend, polling while it is `pending`.
+* `CheckoutButton.onCreated` hands back the created session, so the app can check its result when the Customer returns.
+* `Transxact.watchSession` confirms the Checkout Session status through the Merchant backend, polling while it is `pending`. Cancelling the subscription stops polling at once.
+* `CheckoutReturnBuilder` runs `watchSession` for a return screen and gives its builder the current update and a `refresh` function.
 * `createSessionUri` / `retrieveSessionUri` shorthands cover simple Merchant backends.
 * Never takes an amount or a secret key.

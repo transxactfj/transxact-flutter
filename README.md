@@ -52,26 +52,29 @@ A function beats a URL. The SDK supplies the `Idempotency-Key` (one per attempt,
 CheckoutButton(
   transxact: transxact,
   payload: {'orderId': order.id}, // what is bought; never an amount
+  onCreated: (created) => pendingSessionId = created.id, // keep it to check the result later
   onError: (error) => showError(context, error),
   child: const Text('Pay with M-PAiSA or MyCash'),
 )
 ```
 
-Or call `await transxact.pay(payload: {...})` from your own button.
+`onCreated` runs once the hosted page has opened. Or call `await transxact.pay(payload: {...})` from your own button; it returns the same `CreatedCheckoutSession`.
 
 ### 3. Return screen
 
 Transxact sends the Customer back to your `successUrl` or `cancelUrl` with `?session_id=cs_…` appended. Read it from the app link (see [Mobile setup](#mobile-setup)) and watch the session:
 
 ```dart
-StreamBuilder<CheckoutReturnUpdate>(
-  stream: transxact.watchSession(sessionId),
-  builder: (context, snapshot) {
-    final update = snapshot.data;
-    if (update == null) return const Text('Confirming your payment…');
+CheckoutReturnBuilder(
+  transxact: transxact,
+  sessionId: sessionId,
+  builder: (context, update, refresh) {
     switch (update.state) {
       case CheckoutReturnState.error:
-        return const Text("Couldn't check your payment — try again");
+        return TextButton(
+          onPressed: refresh,
+          child: const Text("Couldn't check your payment — try again"),
+        );
       case CheckoutReturnState.timedOut:
         return const Text("Still confirming your payment. We'll email you when it's done.");
       case CheckoutReturnState.settled:
@@ -80,12 +83,15 @@ StreamBuilder<CheckoutReturnUpdate>(
           CheckoutSessionStatus.failed => const Text("The payment didn't go through."),
           _ => const Text('The payment was cancelled.'),
         };
-      default:
+      case CheckoutReturnState.loading:
+      case CheckoutReturnState.polling:
         return const Text('Confirming your payment…');
     }
   },
 )
 ```
+
+`CheckoutReturnBuilder` starts the lookup when it appears and stops it when it is removed. If you prefer streams, use `transxact.watchSession(sessionId)` directly.
 
 `state` is what the lookup is doing; `session.status` is the payment. They are deliberately separate, so "our request failed" (`error`) is never confused with "the payment failed" (`failed`). The stream polls while the session is `pending` (1.5s, backing off to 8s, giving up after 60s; set `polling: PollingOptions(...)`). Cancel the subscription (or dispose the `StreamBuilder`) to stop polling.
 
@@ -174,7 +180,12 @@ Even then, the return screen is only for showing the Customer something. **Fulfi
 
 - `pay({payload})` → `Future<CreatedCheckoutSession?>`: creates the session and opens `hostedUrl`. Returns `null` if a payment is already starting.
 - `fetchSession(id)` → `Future<CheckoutSession>`: one lookup.
-- `watchSession(id)` → `Stream<CheckoutReturnUpdate>`: `loading`, `polling`, then `settled`, `timedOut` or `error`.
+- `watchSession(id)` → `Stream<CheckoutReturnUpdate>`: `loading`, `polling`, then `settled`, `timedOut` or `error`. Cancelling the subscription stops polling.
+
+### Widgets
+
+- `CheckoutButton({transxact, child, payload, onCreated, onError})`: a pay button that is disabled with a spinner while the session is created. `onCreated` receives the `CreatedCheckoutSession` (`id`, `hostedUrl`) once the hosted page has opened.
+- `CheckoutReturnBuilder({transxact, sessionId, builder})`: runs `watchSession` for you. `builder(context, update, refresh)` is called for every `CheckoutReturnUpdate`; call `refresh` to start the lookup again. Changing `sessionId` restarts it.
 
 ### Errors
 

@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    name: Format, analyze, test, pack
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      - run: dart format --set-exit-if-changed .
+
+      - run: flutter analyze
+
+      - run: flutter test
+
+      # The example app depends on the package by path, so it breaks when the package's API does.
+      - name: Example app
+        working-directory: example
+        run: |
+          flutter pub get
+          flutter analyze
+          flutter test
+
+      # Catches packaging problems (missing LICENSE, bad pubspec, files that shouldn't ship) before a release.
+      - run: flutter pub publish --dry-run

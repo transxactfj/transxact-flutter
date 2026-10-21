@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'checkout.dart';
+import 'checkout_return_builder.dart';
+import 'types.dart';
 
 /// A pay button. While the Checkout Session is being created it is disabled
 /// and shows a spinner.
@@ -10,6 +12,7 @@ class CheckoutButton extends StatefulWidget {
     required this.transxact,
     required this.child,
     this.payload,
+    this.onCreated,
     this.onError,
   });
 
@@ -18,6 +21,11 @@ class CheckoutButton extends StatefulWidget {
 
   /// Identifies what is being bought; the Merchant backend decides the amount.
   final Object? payload;
+
+  /// Called once the Checkout Session exists and its hosted page has been
+  /// opened. Keep the session id to check the result when the Customer
+  /// returns (see [CheckoutReturnBuilder]).
+  final void Function(CreatedCheckoutSession created)? onCreated;
   final void Function(Object error)? onError;
 
   @override
@@ -30,7 +38,8 @@ class _CheckoutButtonState extends State<CheckoutButton> {
   Future<void> _tap() async {
     setState(() => _busy = true);
     try {
-      await widget.transxact.pay(payload: widget.payload);
+      final created = await widget.transxact.pay(payload: widget.payload);
+      if (created != null) widget.onCreated?.call(created);
     } catch (error) {
       widget.onError?.call(error);
     } finally {
