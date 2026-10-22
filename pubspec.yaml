@@ -8,7 +8,7 @@ topics: [payments, checkout, fiji, mpaisa, mycash]
 
 environment:
   sdk: ^3.8.0
-  flutter: ">=3.27.0"
+  flutter: ">=3.32.0"
 
 dependencies:
   flutter:
