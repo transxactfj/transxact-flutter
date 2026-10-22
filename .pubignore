@@ -1,2 +1,32 @@
+# A .pubignore replaces .gitignore for pub, so everything .gitignore excludes is repeated here.
+
+# Internal, not for integrators.
 docs/
 AGENTS.md
+.github/
+
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# Flutter/Dart/Pub related
+/pubspec.lock
+**/doc/api/
+.dart_tool/
+.flutter-plugins-dependencies
+/build/
+/coverage/
