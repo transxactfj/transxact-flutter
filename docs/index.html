@@ -6,21 +6,27 @@
 <title>transxact_flutter — Transxact for Flutter</title>
 <meta name="description" content="Flutter helpers for taking M-PAiSA and MyCash payments with Transxact hosted Checkout Sessions. Client-only: no secret keys in your app.">
 <meta name="theme-color" content="#0c0a09">
-<link rel="icon" href="assets/favicon.png">
+<meta property="og:title" content="transxact_flutter — Transxact for Flutter">
+<meta property="og:description" content="Flutter widgets for Transxact hosted Checkout. M-PAiSA and MyCash, in FJD.">
+<meta property="og:image" content="assets/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
 <style>
+/* Shared with transxactfj.github.io/transxact-react — keep the two in step. */
 :root{
-  --lime:#84cc16;--lime-hover:#65a30d;--lime-deep:#4d7c0f;--lime-mist:#f7fee7;
+  --lime:#84cc16;--lime-hover:#65a30d;--lime-deep:#4d7c0f;--lime-mist:#f7fee7;--lime-glow:#bef264;
   --forest:#1a2e05;--stone-950:#0c0a09;--stone-900:#1c1917;--stone-800:#292524;
-  --stone-700:#44403c;--stone-600:#57534e;--stone-400:#a8a29e;--stone-300:#d6d3d1;
+  --stone-700:#44403c;--stone-600:#57534e;--stone-500:#78716c;--stone-400:#a8a29e;--stone-300:#d6d3d1;
   --stone-200:#e7e5e4;--stone-100:#f5f5f4;--stone-50:#fafaf9;--white:#fff;
   --head:"Plus Jakarta Sans",system-ui,sans-serif;--body:Inter,system-ui,sans-serif;
   --mono:ui-monospace,Consolas,monospace;
 }
 *{box-sizing:border-box}
-html{scroll-behavior:smooth}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
 body{margin:0;background:var(--white);color:var(--stone-950);font:400 16px/26px var(--body);-webkit-font-smoothing:antialiased}
 h1,h2,h3,h4{font-family:var(--head);margin:0;letter-spacing:-.02em}
 p{margin:0}
@@ -75,11 +81,16 @@ h2{font:800 clamp(30px,4.5vw,40px)/1.15 var(--head);margin-bottom:14px}
 
 /* code */
 .steps{display:grid;gap:34px}
-.step{display:grid;grid-template-columns:240px 1fr;gap:34px;align-items:start}
+.step{display:grid;grid-template-columns:240px minmax(0,1fr);gap:34px;align-items:start}
 .step h3{font:700 20px/28px var(--head);margin-bottom:8px}
 .step p{color:var(--stone-700);font-size:15px;line-height:24px}
+.step p+p{margin-top:10px}
 pre{margin:0;background:var(--stone-950);color:var(--stone-200);padding:20px 22px;border-radius:12px;overflow-x:auto;font:500 13px/21px var(--mono)}
-pre .k{color:var(--lime)}pre .c{color:var(--stone-400)}pre .s{color:#bef264}
+pre code{background:none;padding:0;font:inherit;border-radius:0}
+/* Same three-colour highlighting as the React page: keywords, strings, comments. */
+pre .k,pre .token.keyword,pre .token.boolean{color:var(--lime)}
+pre .c,pre .token.comment{color:var(--stone-400)}
+pre .s,pre .token.string,pre .token.attr-value,pre .token.template-string{color:var(--lime-glow)}
 
 /* rules */
 .rules{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
@@ -87,6 +98,7 @@ pre .k{color:var(--lime)}pre .c{color:var(--stone-400)}pre .s{color:#bef264}
 .rule i{flex:none;width:12px;height:36px;background:var(--lime);transform:skewX(-15deg);margin-top:3px}
 .rule h3{font:700 16px/22px var(--head);color:var(--forest);margin-bottom:4px}
 .rule p{color:#365314;font-size:14px;line-height:22px}
+.rule code{background:rgba(77,124,15,.1)}
 
 /* flow */
 .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:8px}
@@ -95,6 +107,22 @@ pre .k{color:var(--lime)}pre .c{color:var(--stone-400)}pre .s{color:#bef264}
 .flow div>*{transform:skewX(15deg)}
 .flow b{display:block;font:700 14px var(--head);color:var(--lime);margin-bottom:2px}
 .flow-wrap{background:var(--stone-950);border-radius:14px;padding:30px 30px 30px 40px;overflow:hidden}
+
+/* api */
+.api{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
+.api .wide{grid-column:1/-1}
+.api .card h3{font:600 17px/24px var(--mono);letter-spacing:0;margin-bottom:8px;overflow-wrap:anywhere}
+.api .card>p{margin-bottom:14px}
+table{width:100%;border-collapse:collapse;font-size:14px;line-height:21px}
+th{text-align:left;font:700 11px/16px var(--head);letter-spacing:.1em;text-transform:uppercase;color:var(--stone-600);padding:0 12px 8px 0}
+td{padding:10px 12px 10px 0;border-top:1px solid var(--stone-200);vertical-align:top;color:var(--stone-700)}
+td code{font-size:12.5px;white-space:nowrap}
+.states{margin-top:14px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;color:var(--stone-600)}
+.pill{font:600 12px/20px var(--mono);padding:2px 9px;border-radius:99px;background:var(--stone-100);color:var(--stone-700)}
+.pill.ok{background:var(--lime-mist);color:var(--lime-deep)}
+.pill.warn{background:#fef3c7;color:#92400e}
+.pill.bad{background:#ffe4e6;color:#9f1239}
+.more{margin-top:28px;color:var(--stone-700);font-size:15px}
 
 /* footer */
 footer{background:var(--stone-950);color:var(--stone-400);padding:56px 0 44px;font-size:14px}
@@ -106,8 +134,8 @@ footer a:hover{color:var(--lime)}
 .legal{width:100%;border-top:1px solid var(--stone-800);padding-top:22px;margin-top:6px;font-size:12px}
 
 @media (max-width:860px){
-  .grid3,.rules{grid-template-columns:1fr}
-  .step{grid-template-columns:1fr;gap:14px}
+  .grid3,.rules,.api{grid-template-columns:minmax(0,1fr)}
+  .step{grid-template-columns:minmax(0,1fr);gap:14px}
   .flow{grid-template-columns:1fr;gap:6px}
   .flow div{transform:none;margin:0;border-radius:8px}
   .flow div>*{transform:none}
@@ -115,6 +143,7 @@ footer a:hover{color:var(--lime)}
   .hero{padding:64px 0 72px}
   .hero .motif{right:-420px;opacity:.7}
   section{padding:64px 0}
+  td code{white-space:normal}
 }
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 </style>
@@ -128,6 +157,7 @@ footer a:hover{color:var(--lime)}
       <li class="hide-sm"><a href="#how">How it works</a></li>
       <li class="hide-sm"><a href="#quickstart">Quickstart</a></li>
       <li class="hide-sm"><a href="#rules">Safety rules</a></li>
+      <li class="hide-sm"><a href="#api">API</a></li>
       <li><a href="https://pub.dev/packages/transxact_flutter">pub.dev</a></li>
       <li><a href="https://github.com/transxactfj/transxact-flutter">GitHub</a></li>
     </ul>
@@ -139,14 +169,14 @@ footer a:hover{color:var(--lime)}
   <div class="wrap">
     <span class="tag"><span>FLUTTER SDK</span></span>
     <h1>Payments made <span class="hl">easy.</span><br>In your Flutter app.</h1>
-    <p class="lead">Take M-PAiSA and MyCash payments in FJD with Transxact hosted Checkout Sessions. Your app never holds a secret key and never sets an amount.</p>
+    <p class="lead">Take M&#8209;PAiSA and MyCash payments in FJD with Transxact hosted Checkout Sessions. Your app never holds a secret key and never sets an amount.</p>
     <div class="cta">
       <a class="btn" href="#quickstart"><span>Get started</span></a>
       <a class="btn ghost" href="https://github.com/transxactfj/transxact-flutter"><span>View on GitHub</span></a>
     </div>
     <div class="install">
       <code id="install-cmd">flutter pub add transxact_flutter</code>
-      <button class="copy" type="button" id="copy-btn">Copy</button>
+      <button class="copy" type="button" data-copy-from="install-cmd">Copy</button>
     </div>
   </div>
 </header>
@@ -163,7 +193,7 @@ footer a:hover{color:var(--lime)}
     </div>
     <div class="flow-wrap" style="margin-top:34px" aria-label="Payment flow">
       <div class="flow">
-        <div><b>1 · App</b>Taps Pay</div>
+        <div><b>1 · App</b>Customer taps Pay</div>
         <div><b>2 · Your backend</b>Creates the session with your key</div>
         <div><b>3 · Transxact</b>Hosted page takes the payment</div>
         <div><b>4 · App</b>Backend confirms the status</div>
@@ -175,38 +205,64 @@ footer a:hover{color:var(--lime)}
 <section class="alt" id="quickstart">
   <div class="wrap">
     <div class="eyebrow">02 — Quickstart</div>
-    <h2>Three pieces of code.</h2>
-    <p class="sub">Point the SDK at your backend, add a button, and show the result.</p>
+    <h2>Four pieces of code.</h2>
+    <p class="sub">Point the SDK at your backend, add a button, show the result, and give your backend one route.</p>
     <div class="steps">
       <div class="step">
-        <div><h3>1 · Configure</h3><p>Use URLs for a simple backend, or your own functions when it needs a different request shape. The SDK sends one Idempotency-Key per attempt.</p></div>
-<pre><span class="k">final</span> transxact = Transxact(
-  createSessionUri: Uri.parse(<span class="s">'https://shop.example/api/checkout'</span>),
-  retrieveSessionUri: Uri.parse(<span class="s">'https://shop.example/api/checkout'</span>),
-);</pre>
+        <div><h3>1 · Configure</h3><p>Create one <code>Transxact</code> and share it with the button and the return screen. Use URLs for a simple backend, or <a href="https://github.com/transxactfj/transxact-flutter#1-configure">your own functions</a> when it needs a different request shape.</p><p>The SDK sends one Idempotency-Key per attempt for your backend to forward.</p></div>
+<pre><code class="language-dart">final transxact = Transxact(
+  createSessionUri: Uri.parse('https://shop.example/api/checkout'),
+  retrieveSessionUri: Uri.parse('https://shop.example/api/checkout'),
+);</code></pre>
       </div>
       <div class="step">
-        <div><h3>2 · Pay button</h3><p>Say <em>what</em> is bought. The amount is decided by your backend, where the Customer can’t edit it.</p></div>
-<pre>CheckoutButton(
+        <div><h3>2 · Pay button</h3><p>Say <em>what</em> is bought. The amount is decided by your backend, where the Customer can’t edit it.</p><p>The button is disabled with a spinner while it works, so repeat taps are ignored. <code>onCreated</code> hands back the session id to check later.</p></div>
+<pre><code class="language-dart">CheckoutButton(
   transxact: transxact,
-  payload: {<span class="s">'orderId'</span>: order.id}, <span class="c">// never an amount</span>
+  payload: {'orderId': order.id}, // never an amount
   onCreated: (created) =&gt; pendingSessionId = created.id,
   onError: (error) =&gt; showError(context, error),
-  child: <span class="k">const</span> Text(<span class="s">'Pay with M-PAiSA or MyCash'</span>),
-)</pre>
+  child: const Text('Pay with M-PAiSA or MyCash'),
+)</code></pre>
       </div>
       <div class="step">
-        <div><h3>3 · Return screen</h3><p>Polls your backend while the session is pending, then settles on succeeded, failed or cancelled.</p></div>
-<pre>CheckoutReturnBuilder(
+        <div><h3>3 · Return screen</h3><p>Polls your backend while the session is pending, then settles on succeeded, failed or cancelled.</p><p><code>update.state</code> is what the lookup is doing; <code>session.status</code> is the payment.</p></div>
+<pre><code class="language-dart">CheckoutReturnBuilder(
   transxact: transxact,
   sessionId: sessionId,
   builder: (context, update, refresh) {
-    <span class="k">if</span> (update.state == CheckoutReturnState.settled) {
-      <span class="k">return</span> Text(update.session!.status.name);
+    if (update.state == CheckoutReturnState.error) {
+      return TextButton(onPressed: refresh, child: const Text('Try again'));
     }
-    <span class="k">return</span> <span class="k">const</span> CircularProgressIndicator();
+    if (update.state != CheckoutReturnState.settled) {
+      return const Text('Confirming your payment…');
+    }
+    return Text(update.session!.status.name);
   },
-)</pre>
+)</code></pre>
+      </div>
+      <div class="step">
+        <div><h3>4 · Merchant backend</h3><p>The one piece that runs on your server, not in the app. It uses <code>@transxact/node</code> and your secret key.</p><p>It looks up the price, forwards the Idempotency-Key, and reports the status. A runnable version is in the <a href="https://github.com/transxactfj/transxact-flutter/tree/main/example/backend">example app</a>. This one uses Node.</p></div>
+<pre><code class="language-js">// server.mjs — server-only
+import { TransxactApiClient } from "@transxact/node";
+
+const transxact = new TransxactApiClient({ token: process.env.TRANSXACT_SECRET_KEY });
+const ORDERS = { order_1001: { totalCents: 2500 } }; // your own price list
+
+// POST /api/checkout
+const { orderId } = await readJson(req);
+const session = await transxact.checkoutSessions.create({
+    idempotencyKey: req.headers["idempotency-key"] ?? randomUUID(),
+    amount: ORDERS[orderId].totalCents,
+    currency: "FJD",
+    successUrl: "https://shop.example/checkout/return",
+    cancelUrl: "https://shop.example/checkout/return",
+});
+send(res, 200, { id: session.id, hostedUrl: session.hostedUrl });
+
+// GET /api/checkout?session_id=cs_…
+const found = await transxact.checkoutSessions.retrieve({ id });
+send(res, 200, { id: found.id, status: found.status });</code></pre>
       </div>
     </div>
   </div>
@@ -218,19 +274,78 @@ footer a:hover{color:var(--lime)}
     <h2>Built so the unsafe thing can’t happen.</h2>
     <p class="sub">These rules are part of the SDK’s design and are covered by its tests.</p>
     <div class="rules">
-      <div class="rule"><i></i><div><h3>No secret keys</h3><p>The SDK never holds a Transxact key and never accepts an <code>sk_</code> key. A secret key can’t live safely in a mobile app.</p></div></div>
+      <div class="rule"><i></i><div><h3>No secret keys</h3><p>The SDK has no key option, never accepts an <code>sk_</code> key and never calls Transxact. Every request goes to your Merchant backend.</p></div></div>
       <div class="rule"><i></i><div><h3>No amounts</h3><p>The app says what is bought. Prices are decided on your Merchant backend.</p></div></div>
-      <div class="rule"><i></i><div><h3>Checked links only</h3><p>The hosted URL must be https (or loopback http for local development) before it is opened.</p></div></div>
+      <div class="rule"><i></i><div><h3>Checked links only</h3><p>The hosted URL must be https (or http on localhost, <code>10.0.2.2</code> or <code>*.localhost</code> for local development) before it is opened.</p></div></div>
       <div class="rule"><i></i><div><h3>One key per attempt</h3><p>A retry after a lost response replays the same Checkout Session, so no double charges.</p></div></div>
+      <div class="rule"><i></i><div><h3>No double taps</h3><p>The button is disabled while it creates a session and opens the browser. Repeat taps are ignored.</p></div></div>
+      <div class="rule"><i></i><div><h3>Request errors aren’t payment failures</h3><p>A failed lookup is <code>CheckoutReturnState.error</code>; a failed payment is <code>CheckoutSessionStatus.failed</code>. They can’t be confused.</p></div></div>
     </div>
   </div>
 </section>
 
-<section class="alt">
+<section class="alt" id="api">
   <div class="wrap">
-    <div class="eyebrow">04 — Try it</div>
-    <h2>Run the example app.</h2>
-    <p class="sub">The repository ships a runnable Flutter app and a small sample Merchant backend. Use an <code>sk_test_</code> key: Test mode runs simulated payments and moves no money.</p>
+    <div class="eyebrow">04 — API</div>
+    <h2>One class, two widgets and one error type.</h2>
+    <p class="sub">At the same level, a function beats a URL. The widgets are thin wrappers over <code>Transxact</code>, so you can also call it directly.</p>
+    <div class="api">
+      <div class="card wide">
+        <h3>Transxact</h3>
+        <p>Holds your backend setup and does the work for the widgets.</p>
+        <table>
+          <tr><th>Parameter</th><th>What it does</th></tr>
+          <tr><td><code>createSession</code> / <code>createSessionUri</code></td><td>Your function, or a URL, for creating a Checkout Session. It must return <code>hostedUrl</code></td></tr>
+          <tr><td><code>retrieveSession</code> / <code>retrieveSessionUri</code></td><td>Your function, or a URL, for looking one up. It must return <code>status</code></td></tr>
+          <tr><td><code>headers</code></td><td>Extra headers for the URL shorthands, e.g. your own auth</td></tr>
+          <tr><td><code>polling</code></td><td><code>PollingOptions(interval, maxInterval, timeout)</code></td></tr>
+        </table>
+        <p style="margin-top:14px;margin-bottom:0"><code>pay({payload})</code> creates the session and opens it. <code>fetchSession(id)</code> does one lookup. <code>watchSession(id)</code> streams updates, and cancelling it stops polling.</p>
+      </div>
+      <div class="card">
+        <h3>CheckoutButton</h3>
+        <p>Starts a Checkout attempt and opens the hosted page.</p>
+        <table>
+          <tr><th>Option</th><th></th></tr>
+          <tr><td><code>payload</code></td><td>What is being bought — never the price</td></tr>
+          <tr><td><code>onCreated</code></td><td>Receives the session <code>id</code> and <code>hostedUrl</code> once the page has opened</td></tr>
+          <tr><td><code>onError</code></td><td>Called when starting the payment fails</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <h3>CheckoutReturnBuilder</h3>
+        <p>Runs <code>watchSession</code> and polls with backoff (1.5 s, doubling to 8 s) for up to 60 s.</p>
+        <table>
+          <tr><th>Option</th><th></th></tr>
+          <tr><td><code>sessionId</code></td><td>The session to check. Changing it restarts the lookup</td></tr>
+          <tr><td><code>builder</code></td><td>Called for every update with a <code>refresh</code> function</td></tr>
+        </table>
+        <div class="states"><span class="pill">loading</span>→<span class="pill">polling</span>→<span class="pill ok">settled</span>or<span class="pill warn">timedOut</span><span class="pill bad">error</span></div>
+      </div>
+      <div class="card wide">
+        <h3>TransxactException</h3>
+        <p>Errors raised by the SDK carry a <code>code</code>. Errors thrown by your own functions pass through unchanged.</p>
+        <table>
+          <tr><th>code</th><th>When</th></tr>
+          <tr><td><code>configMissing</code></td><td>Neither a function nor a URL says how to reach your backend</td></tr>
+          <tr><td><code>httpError</code></td><td>A URL shorthand got a non-2xx response; <code>status</code> and <code>body</code> are set</td></tr>
+          <tr><td><code>invalidResponse</code></td><td>The response isn’t a JSON object, or has no valid <code>hostedUrl</code> or status</td></tr>
+        </table>
+      </div>
+    </div>
+    <p class="more">The full reference is in the <a href="https://github.com/transxactfj/transxact-flutter#readme">README</a> and the <a href="https://pub.dev/documentation/transxact_flutter/latest/">API docs on pub.dev</a>.</p>
+  </div>
+</section>
+
+<section id="test-mode">
+  <div class="wrap">
+    <div class="eyebrow">05 — Try it</div>
+    <h2>Try every outcome in Test mode.</h2>
+    <p class="sub">Use an <code>sk_test_</code> key on your Merchant backend: Test mode runs simulated payments on a practice screen and moves no money. Run the example app against the sample backend, or drive a session to <code>succeeded</code>, <code>failed</code> or <code>cancelled</code> yourself, then open your return screen with that session id.</p>
+<pre style="margin-bottom:34px"><code class="language-bash">curl -X POST https://api.transxact.io/v1/checkout-sessions/cs_…/test-transition \
+  -H "Authorization: Bearer $TRANSXACT_SECRET_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"status":"succeeded","provider":"mpaisa"}'</code></pre>
     <div class="cta" style="margin-top:0">
       <a class="btn" href="https://github.com/transxactfj/transxact-flutter/tree/main/example"><span>Open the example</span></a>
       <a class="btn" style="background:var(--stone-950);color:var(--lime)" href="https://pub.dev/packages/transxact_flutter"><span>pub.dev package</span></a>
@@ -255,15 +370,24 @@ footer a:hover{color:var(--lime)}
   </div>
 </footer>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-clike.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-dart.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
 <script>
-(function(){
-  var btn=document.getElementById('copy-btn');
-  var cmd=document.getElementById('install-cmd');
-  btn.addEventListener('click',function(){
-    function done(){btn.textContent='Copied';setTimeout(function(){btn.textContent='Copy'},1600)}
-    if(navigator.clipboard){navigator.clipboard.writeText(cmd.textContent).then(done,function(){})}
-  });
-})();
+for (const button of document.querySelectorAll(".copy")) {
+    button.addEventListener("click", async () => {
+        const text = document.getElementById(button.dataset.copyFrom).textContent;
+        try {
+            await navigator.clipboard.writeText(text);
+            button.textContent = "Copied";
+        } catch {
+            button.textContent = "Press Ctrl+C";
+        }
+        setTimeout(() => (button.textContent = "Copy"), 1600);
+    });
+}
 </script>
 </body>
 </html>
