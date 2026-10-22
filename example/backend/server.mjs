@@ -1,7 +1,7 @@
 // A minimal Merchant backend for the example app. NOT part of the package.
 //
 //   cd example/backend
-//   npm install @transxact/node
+//   npm install
 //   TRANSXACT_SECRET_KEY=sk_test_... node server.mjs
 //
 // Then run the app with:

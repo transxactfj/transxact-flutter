@@ -16,7 +16,7 @@ Without a backend the app uses an in-memory fake that returns `https://transxact
 
    ```bash
    cd backend
-   npm install @transxact/node
+   npm install
    TRANSXACT_SECRET_KEY=sk_test_... node server.mjs
    ```
 
