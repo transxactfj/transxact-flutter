@@ -1,27 +1,32 @@
 name: Publish to pub.dev
 
+# pub.dev only accepts OIDC publishes from tag pushes, so this fires on the tag Release Please creates.
+# Needs the tag pattern `v{{version}}` set under the package's Admin > Automated publishing on pub.dev.
 on:
-  release:
-    types: [published] # Triggered automatically when Release Please creates a release
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+*"
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
-      id-token: write # Required for pub.dev OIDC authentication
+      contents: read
+      id-token: write # pub.dev OIDC authentication
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@v1
+      # Exchanges the OIDC token for a pub.dev credential; Flutter's bundled dart reads the same pub config.
+      - uses: dart-lang/setup-dart@v1
 
-      - name: Install dependencies
-        run: dart pub get
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
 
-      - name: Verify package layout
-        run: dart pub publish --dry-run
+      - run: flutter pub get
 
-      - name: Publish to pub.dev
-        run: dart pub publish --force
+      - run: flutter pub publish --dry-run
+
+      - run: flutter pub publish --force
