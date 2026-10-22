@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>transxact_flutter — Transxact for Flutter</title>
+<meta name="description" content="Flutter helpers for taking M-PAiSA and MyCash payments with Transxact hosted Checkout Sessions. Client-only: no secret keys in your app.">
+<meta name="theme-color" content="#0c0a09">
+<link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --lime:#84cc16;--lime-hover:#65a30d;--lime-deep:#4d7c0f;--lime-mist:#f7fee7;
+  --forest:#1a2e05;--stone-950:#0c0a09;--stone-900:#1c1917;--stone-800:#292524;
+  --stone-700:#44403c;--stone-600:#57534e;--stone-400:#a8a29e;--stone-300:#d6d3d1;
+  --stone-200:#e7e5e4;--stone-100:#f5f5f4;--stone-50:#fafaf9;--white:#fff;
+  --head:"Plus Jakarta Sans",system-ui,sans-serif;--body:Inter,system-ui,sans-serif;
+  --mono:ui-monospace,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--white);color:var(--stone-950);font:400 16px/26px var(--body);-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:var(--head);margin:0;letter-spacing:-.02em}
+p{margin:0}
+a{color:var(--lime-deep)}
+a:focus-visible,button:focus-visible{outline:3px solid var(--lime);outline-offset:3px}
+code{font:500 .9em var(--mono);background:var(--stone-100);padding:1px 6px;border-radius:4px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+.eyebrow{font:700 12px/16px var(--head);letter-spacing:.14em;text-transform:uppercase;color:var(--lime-deep);margin-bottom:14px}
+.dark .eyebrow{color:var(--lime)}
+
+/* nav */
+nav{position:sticky;top:0;z-index:10;background:var(--stone-950)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+nav img{height:28px;display:block}
+nav ul{display:flex;gap:22px;list-style:none;margin:0;padding:0;align-items:center}
+nav a{color:var(--stone-400);font:600 13px var(--head);text-decoration:none}
+nav a:hover{color:var(--lime)}
+
+/* buttons: the 15° slant is the brand's one graphic device */
+.btn{display:inline-block;transform:skewX(-15deg);background:var(--lime);color:var(--stone-950);font:600 15px var(--body);padding:12px 30px;text-decoration:none;border:0;cursor:pointer;transition:background .15s}
+.btn:hover{background:var(--lime-hover)}
+.btn span{display:inline-block;transform:skewX(15deg)}
+.btn.ghost{background:transparent;color:var(--white);box-shadow:inset 0 0 0 1.5px var(--stone-600)}
+.btn.ghost:hover{background:var(--stone-900);color:var(--lime)}
+.tag{display:inline-block;transform:skewX(-15deg);background:var(--stone-950);color:var(--lime);font:700 12px var(--head);padding:6px 14px}
+.tag span{display:inline-block;transform:skewX(15deg)}
+.dark .tag{background:var(--forest)}
+
+/* hero */
+.hero{position:relative;overflow:hidden;background:var(--stone-950);color:var(--white);padding:96px 0 104px}
+.hero .motif{position:absolute;right:-220px;top:20px;width:900px;fill:var(--forest);pointer-events:none}
+.hero .wrap{position:relative}
+.hero h1{font:800 clamp(44px,8vw,88px)/1.02 var(--head);letter-spacing:-.03em;margin:18px 0 22px}
+.hl{background:linear-gradient(transparent 62%,var(--lime) 62%);color:var(--white)}
+.hero .lead{font-size:19px;line-height:30px;color:var(--stone-300);max-width:600px}
+.cta{display:flex;gap:20px;flex-wrap:wrap;margin-top:34px}
+.install{margin-top:44px;display:flex;align-items:center;gap:12px;background:var(--stone-900);border:1px solid var(--stone-800);border-radius:10px;padding:10px 10px 10px 18px;width:fit-content;max-width:100%}
+.install code{background:none;color:var(--lime);font-size:14px;padding:0;overflow-x:auto;white-space:nowrap}
+.copy{border:0;background:var(--stone-800);color:var(--white);font:600 12px var(--body);padding:8px 14px;border-radius:6px;cursor:pointer}
+.copy:hover{background:var(--stone-700)}
+
+/* sections */
+section{padding:88px 0}
+section.alt{background:var(--stone-50);border-block:1px solid var(--stone-200)}
+h2{font:800 clamp(30px,4.5vw,40px)/1.15 var(--head);margin-bottom:14px}
+.sub{color:var(--stone-700);font-size:18px;line-height:28px;max-width:680px;margin-bottom:44px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.card{background:var(--white);border:1px solid var(--stone-200);border-radius:14px;padding:26px}
+.card .n{font:800 13px var(--head);color:var(--lime-deep);letter-spacing:.1em;margin-bottom:10px}
+.card h3{font:700 19px/26px var(--head);margin-bottom:8px}
+.card p{color:var(--stone-700);font-size:15px;line-height:24px}
+
+/* code */
+.steps{display:grid;gap:34px}
+.step{display:grid;grid-template-columns:240px 1fr;gap:34px;align-items:start}
+.step h3{font:700 20px/28px var(--head);margin-bottom:8px}
+.step p{color:var(--stone-700);font-size:15px;line-height:24px}
+pre{margin:0;background:var(--stone-950);color:var(--stone-200);padding:20px 22px;border-radius:12px;overflow-x:auto;font:500 13px/21px var(--mono)}
+pre .k{color:var(--lime)}pre .c{color:var(--stone-400)}pre .s{color:#bef264}
+
+/* rules */
+.rules{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.rule{display:flex;gap:16px;background:var(--lime-mist);border-radius:12px;padding:20px 22px}
+.rule i{flex:none;width:12px;height:36px;background:var(--lime);transform:skewX(-15deg);margin-top:3px}
+.rule h3{font:700 16px/22px var(--head);color:var(--forest);margin-bottom:4px}
+.rule p{color:#365314;font-size:14px;line-height:22px}
+
+/* flow */
+.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:8px}
+.flow div{padding:18px 22px;background:var(--stone-900);color:var(--stone-300);font-size:14px;line-height:22px;transform:skewX(-15deg);margin-right:4px}
+.flow div:nth-child(odd){background:var(--stone-950)}
+.flow div>*{transform:skewX(15deg)}
+.flow b{display:block;font:700 14px var(--head);color:var(--lime);margin-bottom:2px}
+.flow-wrap{background:var(--stone-950);border-radius:14px;padding:30px 30px 30px 40px;overflow:hidden}
+
+/* footer */
+footer{background:var(--stone-950);color:var(--stone-400);padding:56px 0 44px;font-size:14px}
+footer .wrap{display:flex;gap:30px;justify-content:space-between;flex-wrap:wrap;align-items:flex-start}
+footer img{height:26px;display:block;margin-bottom:12px}
+footer ul{list-style:none;margin:0;padding:0;display:flex;gap:22px;flex-wrap:wrap}
+footer a{color:var(--stone-300);text-decoration:none;font-weight:500}
+footer a:hover{color:var(--lime)}
+.legal{width:100%;border-top:1px solid var(--stone-800);padding-top:22px;margin-top:6px;font-size:12px}
+
+@media (max-width:860px){
+  .grid3,.rules{grid-template-columns:1fr}
+  .step{grid-template-columns:1fr;gap:14px}
+  .flow{grid-template-columns:1fr;gap:6px}
+  .flow div{transform:none;margin:0;border-radius:8px}
+  .flow div>*{transform:none}
+  nav ul li.hide-sm{display:none}
+  .hero{padding:64px 0 72px}
+  .hero .motif{right:-420px;opacity:.7}
+  section{padding:64px 0}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a href="#top" aria-label="Transxact"><img src="assets/logo-reverse.svg" alt="Transxact"></a>
+    <ul>
+      <li class="hide-sm"><a href="#how">How it works</a></li>
+      <li class="hide-sm"><a href="#quickstart">Quickstart</a></li>
+      <li class="hide-sm"><a href="#rules">Safety rules</a></li>
+      <li><a href="https://pub.dev/packages/transxact_flutter">pub.dev</a></li>
+      <li><a href="https://github.com/transxactfj/transxact-flutter">GitHub</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="hero dark" id="top">
+  <svg viewBox="0 0 1152 478" class="motif" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M367 238.7L13.2 238.7L77.6 4.1L431.4 4.1Z"/><path d="M720.8 238.7L785.2 4.1L1139 4.1L1074.6 238.7Z"/><path d="M367 238.7L720.8 238.7L656.4 473.3L302.6 473.3Z"/></svg>
+  <div class="wrap">
+    <span class="tag"><span>FLUTTER SDK</span></span>
+    <h1>Payments made <span class="hl">easy.</span><br>In your Flutter app.</h1>
+    <p class="lead">Take M-PAiSA and MyCash payments in FJD with Transxact hosted Checkout Sessions. Your app never holds a secret key and never sets an amount.</p>
+    <div class="cta">
+      <a class="btn" href="#quickstart"><span>Get started</span></a>
+      <a class="btn ghost" href="https://github.com/transxactfj/transxact-flutter"><span>View on GitHub</span></a>
+    </div>
+    <div class="install">
+      <code id="install-cmd">flutter pub add transxact_flutter</code>
+      <button class="copy" type="button" id="copy-btn">Copy</button>
+    </div>
+  </div>
+</header>
+
+<section id="how">
+  <div class="wrap">
+    <div class="eyebrow">01 — How it works</div>
+    <h2>Two legs. Your server in the middle.</h2>
+    <p class="sub">The package covers the two parts of a payment that happen in your app. Everything that needs a secret key stays on your Merchant backend.</p>
+    <div class="grid3">
+      <div class="card"><div class="n">PAY</div><h3>Create and open</h3><p>Ask your backend to create a Checkout Session, then open its hosted page in an in-app browser: Chrome Custom Tabs on Android, SFSafariViewController on iOS.</p></div>
+      <div class="card"><div class="n">RETURN</div><h3>Ask, don’t assume</h3><p>When the Customer comes back, your backend is asked what really happened. The return link is only a hint, never proof of payment.</p></div>
+      <div class="card"><div class="n">FULFIL</div><h3>Trust the webhook</h3><p>Fulfil orders from signed webhooks on your server. The app only shows the Customer the outcome.</p></div>
+    </div>
+    <div class="flow-wrap" style="margin-top:34px" aria-label="Payment flow">
+      <div class="flow">
+        <div><b>1 · App</b>Taps Pay</div>
+        <div><b>2 · Your backend</b>Creates the session with your key</div>
+        <div><b>3 · Transxact</b>Hosted page takes the payment</div>
+        <div><b>4 · App</b>Backend confirms the status</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="quickstart">
+  <div class="wrap">
+    <div class="eyebrow">02 — Quickstart</div>
+    <h2>Three pieces of code.</h2>
+    <p class="sub">Point the SDK at your backend, add a button, and show the result.</p>
+    <div class="steps">
+      <div class="step">
+        <div><h3>1 · Configure</h3><p>Use URLs for a simple backend, or your own functions when it needs a different request shape. The SDK sends one Idempotency-Key per attempt.</p></div>
+<pre><span class="k">final</span> transxact = Transxact(
+  createSessionUri: Uri.parse(<span class="s">'https://shop.example/api/checkout'</span>),
+  retrieveSessionUri: Uri.parse(<span class="s">'https://shop.example/api/checkout'</span>),
+);</pre>
+      </div>
+      <div class="step">
+        <div><h3>2 · Pay button</h3><p>Say <em>what</em> is bought. The amount is decided by your backend, where the Customer can’t edit it.</p></div>
+<pre>CheckoutButton(
+  transxact: transxact,
+  payload: {<span class="s">'orderId'</span>: order.id}, <span class="c">// never an amount</span>
+  onCreated: (created) =&gt; pendingSessionId = created.id,
+  onError: (error) =&gt; showError(context, error),
+  child: <span class="k">const</span> Text(<span class="s">'Pay with M-PAiSA or MyCash'</span>),
+)</pre>
+      </div>
+      <div class="step">
+        <div><h3>3 · Return screen</h3><p>Polls your backend while the session is pending, then settles on succeeded, failed or cancelled.</p></div>
+<pre>CheckoutReturnBuilder(
+  transxact: transxact,
+  sessionId: sessionId,
+  builder: (context, update, refresh) {
+    <span class="k">if</span> (update.state == CheckoutReturnState.settled) {
+      <span class="k">return</span> Text(update.session!.status.name);
+    }
+    <span class="k">return</span> <span class="k">const</span> CircularProgressIndicator();
+  },
+)</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="rules">
+  <div class="wrap">
+    <div class="eyebrow">03 — Safety rules</div>
+    <h2>Built so the unsafe thing can’t happen.</h2>
+    <p class="sub">These rules are part of the SDK’s design and are covered by its tests.</p>
+    <div class="rules">
+      <div class="rule"><i></i><div><h3>No secret keys</h3><p>The SDK never holds a Transxact key and never accepts an <code>sk_</code> key. A secret key can’t live safely in a mobile app.</p></div></div>
+      <div class="rule"><i></i><div><h3>No amounts</h3><p>The app says what is bought. Prices are decided on your Merchant backend.</p></div></div>
+      <div class="rule"><i></i><div><h3>Checked links only</h3><p>The hosted URL must be https (or loopback http for local development) before it is opened.</p></div></div>
+      <div class="rule"><i></i><div><h3>One key per attempt</h3><p>A retry after a lost response replays the same Checkout Session, so no double charges.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="alt">
+  <div class="wrap">
+    <div class="eyebrow">04 — Try it</div>
+    <h2>Run the example app.</h2>
+    <p class="sub">The repository ships a runnable Flutter app and a small sample Merchant backend. Use an <code>sk_test_</code> key: Test mode runs simulated payments and moves no money.</p>
+    <div class="cta" style="margin-top:0">
+      <a class="btn" href="https://github.com/transxactfj/transxact-flutter/tree/main/example"><span>Open the example</span></a>
+      <a class="btn" style="background:var(--stone-950);color:var(--lime)" href="https://pub.dev/packages/transxact_flutter"><span>pub.dev package</span></a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <img src="assets/logo-reverse.svg" alt="Transxact">
+      <p>Payments made easy.</p>
+    </div>
+    <ul>
+      <li><a href="https://transxact.io">transxact.io</a></li>
+      <li><a href="https://github.com/transxactfj/transxact-flutter">GitHub</a></li>
+      <li><a href="https://pub.dev/packages/transxact_flutter">pub.dev</a></li>
+      <li><a href="https://github.com/transxactfj/transxact-flutter/blob/main/CHANGELOG.md">Changelog</a></li>
+      <li><a href="https://github.com/transxactfj/transxact-flutter/blob/main/LICENSE">Apache-2.0</a></li>
+    </ul>
+    <p class="legal">transxact_flutter is client-only. It never calls Transxact directly; every request goes through your Merchant backend.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var btn=document.getElementById('copy-btn');
+  var cmd=document.getElementById('install-cmd');
+  btn.addEventListener('click',function(){
+    function done(){btn.textContent='Copied';setTimeout(function(){btn.textContent='Copy'},1600)}
+    if(navigator.clipboard){navigator.clipboard.writeText(cmd.textContent).then(done,function(){})}
+  });
+})();
+</script>
+</body>
+</html>
