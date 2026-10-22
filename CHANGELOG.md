@@ -1,3 +1,12 @@
+# Changelog
+
+## [0.1.1](https://github.com/transxactfj/transxact-flutter/compare/v0.1.0...v0.1.1) (2026-10-22)
+
+
+### Bug Fixes
+
+* require Flutter 3.32+ to match the Dart SDK constraint ([528c3e9](https://github.com/transxactfj/transxact-flutter/commit/528c3e98a7d10eee7776d3aeb61aff015d13822b))
+
 ## 0.1.0
 
 * First release of `transxact_flutter`, the client-only Flutter SDK for Transxact hosted Checkout Sessions.
