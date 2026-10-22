@@ -25,9 +25,11 @@ Transxact _withStatuses(List<String> statuses) {
 
 void main() {
   test('polls until the session settles', () async {
-    final updates = await _withStatuses(['pending', 'pending', 'succeeded'])
-        .watchSession('cs_1')
-        .toList();
+    final updates = await _withStatuses([
+      'pending',
+      'pending',
+      'succeeded',
+    ]).watchSession('cs_1').toList();
 
     expect(updates.map((u) => u.state), [
       CheckoutReturnState.loading,
@@ -39,17 +41,17 @@ void main() {
   });
 
   test('failed is a settled payment, not an error state', () async {
-    final updates = await _withStatuses(['failed'])
-        .watchSession('cs_1')
-        .toList();
+    final updates = await _withStatuses([
+      'failed',
+    ]).watchSession('cs_1').toList();
     expect(updates.last.state, CheckoutReturnState.settled);
     expect(updates.last.session?.status, CheckoutSessionStatus.failed);
   });
 
   test('times out while still pending', () async {
-    final updates = await _withStatuses(['pending'])
-        .watchSession('cs_1')
-        .toList();
+    final updates = await _withStatuses([
+      'pending',
+    ]).watchSession('cs_1').toList();
     expect(updates.last.state, CheckoutReturnState.timedOut);
     expect(updates.last.session?.status, CheckoutSessionStatus.pending);
   });
@@ -65,9 +67,9 @@ void main() {
   });
 
   test('an unknown status is invalidResponse', () async {
-    final updates = await _withStatuses(['weird'])
-        .watchSession('cs_1')
-        .toList();
+    final updates = await _withStatuses([
+      'weird',
+    ]).watchSession('cs_1').toList();
     expect(updates.last.state, CheckoutReturnState.error);
     expect(updates.last.error, isA<TransxactException>());
   });

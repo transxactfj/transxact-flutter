@@ -18,14 +18,12 @@ class CheckoutSession {
 }
 
 // Your function that asks the Merchant to create a session.
-typedef CreateSession = Future<Map<String, dynamic>> Function(
-  String idempotencyKey,
-);
+typedef CreateSession =
+    Future<Map<String, dynamic>> Function(String idempotencyKey);
 
 //Your functuon that asks the Merchant backend for a session status.
-typedef RetrieveSession = Future<Map<String, dynamic>> Function(
-  String sessionId,
-);
+typedef RetrieveSession =
+    Future<Map<String, dynamic>> Function(String sessionId);
 
 class PollingOptions {
   const PollingOptions({

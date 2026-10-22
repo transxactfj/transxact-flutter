@@ -7,11 +7,12 @@ import 'types.dart';
 
 /// Builds the UI for one [CheckoutReturnUpdate]. Call [refresh] to start the
 /// lookup again, e.g. after an error or a timeout.
-typedef CheckoutReturnWidgetBuilder = Widget Function(
-  BuildContext context,
-  CheckoutReturnUpdate update,
-  VoidCallback refresh,
-);
+typedef CheckoutReturnWidgetBuilder =
+    Widget Function(
+      BuildContext context,
+      CheckoutReturnUpdate update,
+      VoidCallback refresh,
+    );
 
 /// Confirms what actually happened to a Checkout Session, for the screen the
 /// Customer lands on when they come back.
