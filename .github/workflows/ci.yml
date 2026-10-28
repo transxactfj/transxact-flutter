@@ -10,13 +10,18 @@ permissions:
 
 jobs:
   ci:
-    name: Format, analyze, test, pack (Flutter ${{ matrix.flutter }})
+    name: Format, analyze, test, pack (Flutter ${{ matrix.name }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        # The oldest Flutter the package claims to support, and the current stable.
-        flutter: ["3.32.0", "stable"]
+        # The oldest Flutter the package claims to support, and the current stable
+        # (an empty version means the latest on the stable channel).
+        include:
+          - name: minimum (3.32.0)
+            flutter-version: "3.32.0"
+          - name: stable
+            flutter-version: ""
     steps:
       - uses: actions/checkout@v4
 
@@ -24,7 +29,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: ${{ matrix.flutter == 'stable' && '' || matrix.flutter }}
+          flutter-version: ${{ matrix.flutter-version }}
           cache: true
 
       - run: flutter pub get
