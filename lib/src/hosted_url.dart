@@ -1,6 +1,9 @@
 import 'errors.dart';
 
-Uri validateHostedUrl(Object? value) {
+/// Checks a `hostedUrl` before it is opened: https, or http on loopback, with
+/// no credentials in it. [allowedHosts], when given, is an exact-hostname
+/// allowlist.
+Uri validateHostedUrl(Object? value, {Iterable<String>? allowedHosts}) {
   if (value is! String) {
     throw TransxactException(
       TransxactErrorCode.invalidResponse,
@@ -11,7 +14,13 @@ Uri validateHostedUrl(Object? value) {
   if (uri == null || uri.host.isEmpty) {
     throw TransxactException(
       TransxactErrorCode.invalidResponse,
-      'hostedUrl is not a valid URL: $value',
+      'hostedUrl is not a valid URL.',
+    );
+  }
+  if (uri.userInfo.isNotEmpty) {
+    throw TransxactException(
+      TransxactErrorCode.invalidResponse,
+      'hostedUrl must not carry credentials.',
     );
   }
   final loopback =
@@ -26,7 +35,14 @@ Uri validateHostedUrl(Object? value) {
   if (uri.scheme != 'https' && !(uri.scheme == 'http' && loopback)) {
     throw TransxactException(
       TransxactErrorCode.invalidResponse,
-      'hostedUrl must be an https URL: $value',
+      'hostedUrl must be an https URL.',
+    );
+  }
+  if (allowedHosts != null &&
+      !allowedHosts.map((h) => h.toLowerCase()).contains(uri.host)) {
+    throw TransxactException(
+      TransxactErrorCode.invalidResponse,
+      'hostedUrl host "${uri.host}" is not in allowedHostedUrlHosts.',
     );
   }
   return uri;

@@ -10,8 +10,13 @@ permissions:
 
 jobs:
   ci:
-    name: Format, analyze, test, pack
+    name: Format, analyze, test, pack (Flutter ${{ matrix.flutter }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The oldest Flutter the package claims to support, and the current stable.
+        flutter: ["3.32.0", "stable"]
     steps:
       - uses: actions/checkout@v4
 
@@ -19,15 +24,19 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: ${{ matrix.flutter == 'stable' && '' || matrix.flutter }}
           cache: true
 
       - run: flutter pub get
 
       - run: dart format --set-exit-if-changed .
 
-      - run: flutter analyze
+      - run: flutter analyze --fatal-infos
 
-      - run: flutter test
+      - run: flutter test --coverage
+
+      # Reports dependencies with known advisories or that are discontinued.
+      - run: flutter pub outdated
 
       # The example app depends on the package by path, so it breaks when the package's API does.
       - name: Example app

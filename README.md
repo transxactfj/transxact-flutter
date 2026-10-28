@@ -44,7 +44,7 @@ final transxact = Transxact(
 );
 ```
 
-A function beats a URL. The SDK supplies the `Idempotency-Key` (one per attempt, so a retry after a lost response replays the same Checkout Session), validates that `hostedUrl` is `https`, and ignores repeat taps while a payment is starting.
+A function beats a URL. The SDK supplies the `Idempotency-Key` (one per `pay()` call; the URL shorthand retries a transient failure with the same key, and you can pass `pay(idempotencyKey:)` to retry an earlier attempt and get the same Checkout Session back), validates that `hostedUrl` is `https` with no credentials in it, and ignores repeat taps while a payment is starting. It refuses to send an `sk_` key, or an `amount`, `currency`, `quote` or `price` in the payload.
 
 ### 2. Pay button
 
@@ -176,11 +176,17 @@ Even then, the return screen is only for showing the Customer something. **Fulfi
 | `retrieveSession` | `Future<Map<String, dynamic>> Function(String sessionId)`. Must return a map with `status`. |
 | `retrieveSessionUri` | Shorthand: GETs with `session_id` appended to the query. |
 | `headers` | Extra headers for the URL shorthands, e.g. your own auth. |
-| `polling` | `PollingOptions(interval, maxInterval, timeout)`. |
+| `polling` | `PollingOptions(interval, maxInterval, timeout, retries, jitter)`. `retries` (default 3) is how many transient lookup failures in a row polling survives. |
+| `requestTimeout` | How long one request to your backend may take (default 30 s). Also applies to your `createSession` / `retrieveSession` functions. |
+| `maxRetries` | Retries of a transient `createSessionUri` failure (default 2), always with the same `Idempotency-Key`. |
+| `allowedHostedUrlHosts` | Optional exact-hostname allowlist for `hostedUrl`, e.g. `['pay.transxact.io']`. |
+| `onLog` | Optional `void Function(String)`. One redacted line per request (method, path, status); never headers, bodies or query strings. |
 
-- `pay({payload})` → `Future<CreatedCheckoutSession?>`: creates the session and opens `hostedUrl`. Returns `null` if a payment is already starting.
+- `pay({payload, idempotencyKey})` → `Future<CreatedCheckoutSession?>`: creates the session and opens `hostedUrl`. Returns `null` if a payment is already starting.
 - `fetchSession(id)` → `Future<CheckoutSession>`: one lookup.
-- `watchSession(id)` → `Stream<CheckoutReturnUpdate>`: `loading`, `polling`, then `settled`, `timedOut` or `error`. Cancelling the subscription stops polling.
+- `watchSession(id)` → `Stream<CheckoutReturnUpdate>`: `loading`, `polling`, then `settled`, `timedOut` or `error`. Cancelling the subscription stops polling and aborts the lookup in flight. Timeouts, network failures and HTTP 408/429/5xx are retried with backoff (honouring `Retry-After`); other errors end polling.
+- `close()` releases the HTTP client when the SDK created it.
+- `sessionIdFromReturnUri(uri)` → `String?`: the well-formed `session_id` of a return link. It is a hint only; confirm with `watchSession`.
 
 ### Widgets
 
@@ -189,7 +195,9 @@ Even then, the return screen is only for showing the Customer something. **Fulfi
 
 ### Errors
 
-The SDK throws `TransxactException` with a `code`: `configMissing`, `httpError` (with `status` and `body`) or `invalidResponse`. Errors thrown by your own `createSession` / `retrieveSession` functions pass through unchanged.
+The SDK throws `TransxactException` with a `code`: `configMissing`, `httpError` (with `status`, `body`, and your backend's `apiCode` / `requestId` when it sends them), `invalidResponse`, `timeout`, `network`, `cancelled`, `launchFailed` (the checkout page would not open) or `invalidRequest` (a secret key, an amount, or a malformed session id was refused). Branch on `code` and `apiCode`, never on `message`.
+
+Messages name only the request path, never the host, credentials or query string. `body` is whatever your backend answered and may be sensitive: log it, don't show it to the Customer. Errors thrown by your own `createSession` / `retrieveSession` functions pass through unchanged, except that they are cut off by `requestTimeout`.
 
 ## License
 

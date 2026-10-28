@@ -27,6 +27,18 @@ jobs:
 
       - run: flutter pub get
 
+      - name: Tag matches pubspec version
+        run: |
+          version="$(sed -n 's/^version: *//p' pubspec.yaml)"
+          if [ "v$version" != "${GITHUB_REF_NAME}" ]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match pubspec version $version" >&2
+            exit 1
+          fi
+
+      - run: flutter analyze
+
+      - run: flutter test
+
       - run: flutter pub publish --dry-run
 
       - run: flutter pub publish --force
