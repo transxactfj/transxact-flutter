@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/transxactfj/transxact-flutter/compare/v0.1.1...v0.2.0) (2026-10-28)
+
+
+### Features
+
+* harden requests to the Merchant backend ([dafb86c](https://github.com/transxactfj/transxact-flutter/commit/dafb86c6fc0bb8adac0878ead42a18229d928d42))
+
 ## [0.1.1](https://github.com/transxactfj/transxact-flutter/compare/v0.1.0...v0.1.1) (2026-10-22)
 
 
