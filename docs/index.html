@@ -209,7 +209,7 @@ footer a:hover{color:var(--lime)}
     <p class="sub">Point the SDK at your backend, add a button, show the result, and give your backend one route.</p>
     <div class="steps">
       <div class="step">
-        <div><h3>1 · Configure</h3><p>Create one <code>Transxact</code> and share it with the button and the return screen. Use URLs for a simple backend, or <a href="https://github.com/transxactfj/transxact-flutter#1-configure">your own functions</a> when it needs a different request shape.</p><p>The SDK sends one Idempotency-Key per attempt for your backend to forward.</p></div>
+        <div><h3>1 · Configure</h3><p>Create one <code>Transxact</code> and share it with the button and the return screen. Use URLs for a simple backend, or <a href="https://github.com/transxactfj/transxact-flutter#1-configure">your own functions</a> when it needs a different request shape.</p><p>The SDK sends one Idempotency-Key per attempt for your backend to forward, and retries a transient failure with the same key.</p></div>
 <pre><code class="language-dart">final transxact = Transxact(
   createSessionUri: Uri.parse('https://shop.example/api/checkout'),
   retrieveSessionUri: Uri.parse('https://shop.example/api/checkout'),
@@ -274,12 +274,13 @@ send(res, 200, { id: found.id, status: found.status });</code></pre>
     <h2>Built so the unsafe thing can’t happen.</h2>
     <p class="sub">These rules are part of the SDK’s design and are covered by its tests.</p>
     <div class="rules">
-      <div class="rule"><i></i><div><h3>No secret keys</h3><p>The SDK has no key option, never accepts an <code>sk_</code> key and never calls Transxact. Every request goes to your Merchant backend.</p></div></div>
-      <div class="rule"><i></i><div><h3>No amounts</h3><p>The app says what is bought. Prices are decided on your Merchant backend.</p></div></div>
-      <div class="rule"><i></i><div><h3>Checked links only</h3><p>The hosted URL must be https (or http on localhost, <code>10.0.2.2</code> or <code>*.localhost</code> for local development) before it is opened.</p></div></div>
-      <div class="rule"><i></i><div><h3>One key per attempt</h3><p>A retry after a lost response replays the same Checkout Session, so no double charges.</p></div></div>
+      <div class="rule"><i></i><div><h3>No secret keys</h3><p>The SDK has no key option, refuses to send an <code>sk_</code> key in headers, URLs or payload, and never calls Transxact. Every request goes to your Merchant backend.</p></div></div>
+      <div class="rule"><i></i><div><h3>No amounts</h3><p>The app says what is bought. Prices are decided on your Merchant backend, and the SDK throws <code>invalidRequest</code> for an <code>amount</code>, <code>currency</code>, <code>quote</code> or <code>price</code> in the payload.</p></div></div>
+      <div class="rule"><i></i><div><h3>Checked links only</h3><p>The hosted URL must be https (or http on localhost, <code>10.0.2.2</code> or <code>*.localhost</code> for local development) and must not carry credentials before it is opened. Set <code>allowedHostedUrlHosts</code> to accept only your checkout host.</p></div></div>
+      <div class="rule"><i></i><div><h3>One key per attempt</h3><p>A retry within an attempt, or <code>pay(idempotencyKey:)</code> with an earlier key, replays the same Checkout Session, so no double charges.</p></div></div>
       <div class="rule"><i></i><div><h3>No double taps</h3><p>The button is disabled while it creates a session and opens the browser. Repeat taps are ignored.</p></div></div>
       <div class="rule"><i></i><div><h3>Request errors aren’t payment failures</h3><p>A failed lookup is <code>CheckoutReturnState.error</code>; a failed payment is <code>CheckoutSessionStatus.failed</code>. They can’t be confused.</p></div></div>
+      <div class="rule"><i></i><div><h3>Bounded, retried, redacted</h3><p>Every request has a timeout and can be cancelled. Timeouts, network failures and HTTP 408, 429 and 5xx are retried with backoff. Errors name the request path only, never the host, credentials or <code>session_id</code>.</p></div></div>
     </div>
   </div>
 </section>
@@ -298,9 +299,13 @@ send(res, 200, { id: found.id, status: found.status });</code></pre>
           <tr><td><code>createSession</code> / <code>createSessionUri</code></td><td>Your function, or a URL, for creating a Checkout Session. It must return <code>hostedUrl</code></td></tr>
           <tr><td><code>retrieveSession</code> / <code>retrieveSessionUri</code></td><td>Your function, or a URL, for looking one up. It must return <code>status</code></td></tr>
           <tr><td><code>headers</code></td><td>Extra headers for the URL shorthands, e.g. your own auth</td></tr>
-          <tr><td><code>polling</code></td><td><code>PollingOptions(interval, maxInterval, timeout)</code></td></tr>
+          <tr><td><code>polling</code></td><td><code>PollingOptions(interval, maxInterval, timeout, retries, jitter)</code>. <code>retries</code> (default 3) is how many transient lookup failures in a row polling survives</td></tr>
+          <tr><td><code>requestTimeout</code></td><td>How long one request to your backend, or one of your functions, may take before it fails with <code>timeout</code> (default 30 s)</td></tr>
+          <tr><td><code>maxRetries</code></td><td>Retries of a transient <code>createSessionUri</code> failure (default 2), always with the same Idempotency-Key</td></tr>
+          <tr><td><code>allowedHostedUrlHosts</code></td><td>Exact hostnames a <code>hostedUrl</code> may have; by default any https host is accepted</td></tr>
+          <tr><td><code>onLog</code></td><td>Optional. One redacted line per request: method, path and status</td></tr>
         </table>
-        <p style="margin-top:14px;margin-bottom:0"><code>pay({payload})</code> creates the session and opens it. <code>fetchSession(id)</code> does one lookup. <code>watchSession(id)</code> streams updates, and cancelling it stops polling.</p>
+        <p style="margin-top:14px;margin-bottom:0"><code>pay({payload, idempotencyKey})</code> creates the session and opens it. <code>fetchSession(id)</code> does one lookup. <code>watchSession(id)</code> streams updates, and cancelling it stops polling and aborts the lookup in flight. <code>close()</code> releases the HTTP client. <code>sessionIdFromReturnUri(uri)</code> reads a well-formed <code>session_id</code> from a return link.</p>
       </div>
       <div class="card">
         <h3>CheckoutButton</h3>
@@ -308,13 +313,13 @@ send(res, 200, { id: found.id, status: found.status });</code></pre>
         <table>
           <tr><th>Option</th><th></th></tr>
           <tr><td><code>payload</code></td><td>What is being bought — never the price</td></tr>
-          <tr><td><code>onCreated</code></td><td>Receives the session <code>id</code> and <code>hostedUrl</code> once the page has opened</td></tr>
+          <tr><td><code>onCreated</code></td><td>Receives the session <code>id</code>, <code>hostedUrl</code> and <code>idempotencyKey</code> once the page has opened</td></tr>
           <tr><td><code>onError</code></td><td>Called when starting the payment fails</td></tr>
         </table>
       </div>
       <div class="card">
         <h3>CheckoutReturnBuilder</h3>
-        <p>Runs <code>watchSession</code> and polls with backoff (1.5 s, doubling to 8 s) for up to 60 s.</p>
+        <p>Runs <code>watchSession</code> and polls with backoff (1.5 s, doubling to 8 s) for up to 60 s, retrying transient failures.</p>
         <table>
           <tr><th>Option</th><th></th></tr>
           <tr><td><code>sessionId</code></td><td>The session to check. Changing it restarts the lookup</td></tr>
@@ -324,12 +329,17 @@ send(res, 200, { id: found.id, status: found.status });</code></pre>
       </div>
       <div class="card wide">
         <h3>TransxactException</h3>
-        <p>Errors raised by the SDK carry a <code>code</code>. Errors thrown by your own functions pass through unchanged.</p>
+        <p>Errors raised by the SDK carry a <code>code</code>; branch on it and on <code>apiCode</code>, never on the message. Errors thrown by your own functions pass through unchanged, except that <code>requestTimeout</code> cuts them off.</p>
         <table>
           <tr><th>code</th><th>When</th></tr>
           <tr><td><code>configMissing</code></td><td>Neither a function nor a URL says how to reach your backend</td></tr>
-          <tr><td><code>httpError</code></td><td>A URL shorthand got a non-2xx response; <code>status</code> and <code>body</code> are set</td></tr>
-          <tr><td><code>invalidResponse</code></td><td>The response isn’t a JSON object, or has no valid <code>hostedUrl</code> or status</td></tr>
+          <tr><td><code>httpError</code></td><td>A URL shorthand got a non-2xx response; <code>status</code> and <code>body</code> are set, plus <code>apiCode</code> and <code>requestId</code> when your backend sends them</td></tr>
+          <tr><td><code>invalidResponse</code></td><td>The response isn’t a JSON object, or has no valid <code>hostedUrl</code> or status, or is a different Checkout Session than the one asked for</td></tr>
+          <tr><td><code>timeout</code></td><td>No answer within <code>requestTimeout</code></td></tr>
+          <tr><td><code>network</code></td><td>The request never got an answer (offline, DNS, TLS)</td></tr>
+          <tr><td><code>cancelled</code></td><td>The request was cancelled by the caller</td></tr>
+          <tr><td><code>launchFailed</code></td><td>The checkout page would not open</td></tr>
+          <tr><td><code>invalidRequest</code></td><td>A secret key, an amount or a malformed session id was refused</td></tr>
         </table>
       </div>
     </div>
