@@ -15,7 +15,7 @@ jobs:
       id-token: write # pub.dev OIDC authentication
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # Exchanges the OIDC token for a pub.dev credential; Flutter's bundled dart reads the same pub config.
       - uses: dart-lang/setup-dart@v1

@@ -23,7 +23,7 @@ jobs:
           - name: stable
             flutter-version: ""
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Use Flutter
         uses: subosito/flutter-action@v2
